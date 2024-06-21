@@ -1,0 +1,97 @@
+[gd_scene load_steps=10 format=3 uid="uid://dxo14csrq3tqn"]
+
+[ext_resource type="Script" path="res://PhysicsServer3DTest.gd" id="1_oc4cl"]
+[ext_resource type="Script" path="res://FPS.gd" id="2_ntnc7"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_c3o3t"]
+
+[sub_resource type="Sky" id="Sky_d7kab"]
+sky_material = SubResource("ProceduralSkyMaterial_c3o3t")
+
+[sub_resource type="Environment" id="Environment_lm4jh"]
+background_mode = 2
+sky = SubResource("Sky_d7kab")
+ambient_light_source = 3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vay2w"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_l4euw"]
+material = SubResource("StandardMaterial3D_vay2w")
+size = Vector3(100, 2, 100)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ngspf"]
+size = Vector3(100, 2, 100)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_045jf"]
+size = Vector3(1, 30, 100)
+
+[node name="PhysicsServer3DTest" type="Node3D" node_paths=PackedStringArray("camera", "impulse_point")]
+script = ExtResource("1_oc4cl")
+camera = NodePath("Camera3D")
+impulse_point = NodePath("Floor/ImpulsePoint")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lm4jh")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(0.669872, -0.396871, -0.627507, 0.742404, 0.346188, 0.573576, -0.0104003, -0.850086, 0.526541, 0, 10, 0)
+light_color = Color(0.856067, 0.856067, 0.856067, 1)
+light_energy = 1.5
+shadow_enabled = true
+
+[node name="Floor" type="StaticBody3D" parent="."]
+collision_mask = 0
+
+[node name="FloorMesh" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("BoxMesh_l4euw")
+
+[node name="FloorCollision" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("BoxShape3D_ngspf")
+
+[node name="WallLeftCollision" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35, 14, 0)
+shape = SubResource("BoxShape3D_045jf")
+
+[node name="WallRightCollision" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.6, 14, 0)
+shape = SubResource("BoxShape3D_045jf")
+
+[node name="WallTopCollision" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.399998, 14, -32)
+shape = SubResource("BoxShape3D_045jf")
+
+[node name="WallBottomCollision" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.400001, 14, 31)
+shape = SubResource("BoxShape3D_045jf")
+
+[node name="ImpulsePoint" type="Marker3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15, 85)
+fov = 80.0
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="FPS" type="Label" parent="Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 64
+text = "FPS: 60"
+script = ExtResource("2_ntnc7")
+
+[node name="QuitButton" type="Button" parent="Control"]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 613.0
+offset_right = 153.0
+offset_bottom = 688.0
+theme_override_font_sizes/font_size = 48
+text = "QUIT"
+
+[connection signal="pressed" from="Control/QuitButton" to="." method="OnQuitButtonPressed"]
