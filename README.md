@@ -6,3 +6,4 @@ Physics engine: Jolt3D
 Controls:
 WASD keys - Move foward/left/back/right
 Arrow keys - Rotate camera up/left/down/right
+Enter/Space - Apply a random upward impulse 
