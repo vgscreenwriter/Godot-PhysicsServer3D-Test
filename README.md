@@ -2,7 +2,7 @@ An optimization test using Godot's PhysicsServer3D and RenderingServer to spawn 
 
 Godot version: 4.2.2
 
-Physics engine: Jolt3D
+Physics engine: Jolt3D 0.12.0
 
 Controls:
 
