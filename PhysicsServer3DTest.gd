@@ -3,17 +3,19 @@
 
 class_name PhysicsServer3DTest extends Node3D
 
-@export_group("Camera")
+@export_category("Camera")
 # Reference to camera
 @export var camera:Camera3D;
+@export_group("Parameters")
 # Camera movement speed and rotation speed
 @export var camera_movement_speed:float = 5.0 * 0.1;
 @export var camera_rotation_speed:float = 15.0 * 0.1;
 
-@export_group("Misc")
+@export_category("Misc Parameters")
 # Location source of impulse to be applied to objects
 @export var impulse_point:Marker3D;
-# Define the number of test objects to spawn
+# Define the number of each test object type to spawn 
+# e.g. 1000x boxes, 1000x spheres, 1000x cylinders = 3000x objects total
 @export var num_of_objects:int = 1000;
 
 # Reference to world space and scenario
@@ -29,6 +31,11 @@ var sphere_array:Array[SphereObject] = [];
 # Array of cylinders
 var cylinder_array:Array[CylinderObject] = [];
 
+# Draw flags
+var draw_boxes:bool = true;
+var draw_spheres:bool = true;
+var draw_cylinders:bool = true;
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	
@@ -36,43 +43,69 @@ func _ready() -> void:
 	world_space = get_world_3d().space;
 	world_scenario = get_world_3d().scenario;
 	
-	# Create boxes / spheres
-	for i:int in num_of_objects:
-		#var x:float = randf_range( -5.0, 5.0 );
-		var y:float = i + 5.0;
-		#var z:float = randf_range( -5.0, 5.0 );
-		
-		CreateBox( Vector3( randf_range( -5.0, 5.0 ), y, randf_range( -5.0, 5.0 ) ) );
-		CreateSphere( Vector3( randf_range( -5.0, 5.0 ), y, randf_range( -5.0, 5.0 ) ) );
-		CreateCylinder( Vector3( randf_range( -5.0, 5.0 ), y, randf_range( -5.0, 5.0 ) ) );
+	CreatePhysicsObjects();
 	
 # Handle keyboard input for applying impulse force to objects
 func _unhandled_input( event:InputEvent ) -> void:
 	
+	# Key input for applying an impulse to physics objects
 	if( event.is_action_pressed( "apply_impulse" ) ):
 		
 		# Apply an impulse to the objects by passing the impulse_point to their arrays
 		var impulse_point_location:Vector3 = impulse_point.global_transform.origin;
 		
 		for i:int in num_of_objects:
-			box_array[i].ApplyImpulse( impulse_point_location );
-			sphere_array[i].ApplyImpulse( impulse_point_location );
-			cylinder_array[i].ApplyImpulse( impulse_point_location );
-			
+			if( draw_boxes ):
+				box_array[i].ApplyImpulse( impulse_point_location );
+			if( draw_spheres ):
+				sphere_array[i].ApplyImpulse( impulse_point_location );
+			if( draw_cylinders):
+				cylinder_array[i].ApplyImpulse( impulse_point_location );
+	
+	# Input controls for manually removing physics objects
+	# BOXES
+	if( event.is_action_pressed("remove_boxes") && draw_boxes ):
+		# Set draw flag to false
+		draw_boxes = false;
+		
+		# Free the physics objects from memory
+		for i:int in num_of_objects:
+			box_array[i].FreeObject();
+		
+	# SPHERES
+	if( event.is_action_pressed("remove_spheres") && draw_spheres ):
+		draw_spheres = false;
+		
+		for i:int in num_of_objects:
+			sphere_array[i].FreeObject();
+	
+	# CYLINDERS
+	if( event.is_action_pressed("remove_cylinders") && draw_cylinders ):
+		draw_cylinders = false;
+		
+		for i:int in num_of_objects:
+			cylinder_array[i].FreeObject();
 
-# Called every tick
+# Called every frame tick
 func _process( _delta:float ) -> void:
 	
 	# Draw boxes / spheres from the arrays
 	for i:int in num_of_objects:
-		box_array[i].DrawBox();
-		sphere_array[i].DrawSphere();
-		cylinder_array[i].DrawCylinder();
+		if( draw_boxes ):
+			box_array[i].DrawBox();
+		if( draw_spheres ):
+			sphere_array[i].DrawSphere();
+		if( draw_cylinders ):
+			cylinder_array[i].DrawCylinder();
 		
-
+# Called ever physics tick
 func _physics_process( _delta:float ) -> void:
 	# Handle input for camera control
 	HandleCameraControlInput();
+
+# PUBLIC FUNCTIONS
+
+# PRIVATE FUNCTIONS
 
 # Handle input for controlling the camera
 func HandleCameraControlInput() -> void:
@@ -97,7 +130,19 @@ func HandleCameraControlInput() -> void:
 		camera.global_rotation.y += deg_to_rad( camera_rotation_speed );
 	elif( Input.is_action_pressed("cam_right") ):
 		camera.global_rotation.y -= deg_to_rad( camera_rotation_speed );
+
+# Helper function to create all physics objects
+func CreatePhysicsObjects() -> void:
+	
+	# Create boxes / spheres / cylinders
+	for i:int in num_of_objects:
+		#var x:float = randf_range( -5.0, 5.0 );
+		var y:float = i + 5.0;
+		#var z:float = randf_range( -5.0, 5.0 );
 		
+		CreateBox( Vector3( randf_range( -5.0, 5.0 ), y, randf_range( -5.0, 5.0 ) ) );
+		CreateSphere( Vector3( randf_range( -5.0, 5.0 ), y, randf_range( -5.0, 5.0 ) ) );
+		CreateCylinder( Vector3( randf_range( -5.0, 5.0 ), y, randf_range( -5.0, 5.0 ) ) );
 
 # Creates a physics box
 func CreateBox( location:Vector3 ) -> void:
@@ -126,8 +171,9 @@ func CreateCylinder( location:Vector3 ) -> void:
 	# Append the cylinder object to the cylinder array
 	cylinder_array.append( cylinder_object );
 
+# EVENT HANDLER / SIGNAL CONNECT FUNCTIONS
 
-
+# Handles memory clean up when quit button is pressed
 func OnQuitButtonPressed() -> void:
 	
 	# Disable processes to prevent null read error after objects are freed
@@ -136,9 +182,12 @@ func OnQuitButtonPressed() -> void:
 	
 	# REmove objects from memory
 	for i:int in num_of_objects:
-		box_array[i].FreeObject();
-		sphere_array[i].FreeObject();
-		cylinder_array[i].FreeObject();
+		if( draw_boxes ):
+			box_array[i].FreeObject();
+		if( draw_spheres ):
+			sphere_array[i].FreeObject();
+		if( draw_cylinders ):
+			cylinder_array[i].FreeObject();
 		
 	# Quit
 	get_tree().quit();
