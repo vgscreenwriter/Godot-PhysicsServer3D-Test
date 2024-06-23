@@ -3,18 +3,16 @@
 
 class_name PhysicsServer3DTest extends Node3D
 
-@export_category("Camera")
+@export_group("Camera")
 # Reference to camera
 @export var camera:Camera3D;
-@export_group("Controls")
 # Camera movement speed and rotation speed
 @export var camera_movement_speed:float = 5.0 * 0.1;
 @export var camera_rotation_speed:float = 15.0 * 0.1;
 
-@export_category("Misc")
+@export_group("Misc")
 # Location source of impulse to be applied to objects
 @export var impulse_point:Marker3D;
-@export_group("Parameters")
 # Define the number of test objects to spawn
 @export var num_of_objects:int = 1000;
 
