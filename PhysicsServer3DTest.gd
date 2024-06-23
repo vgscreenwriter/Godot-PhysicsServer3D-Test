@@ -86,7 +86,7 @@ func _unhandled_input( event:InputEvent ) -> void:
 		for i:int in num_of_objects:
 			cylinder_array[i].FreeObject();
 
-# Called every frame tick
+# Called every frame (variable). 'delta' is the elapsed time since the previous frame.
 func _process( _delta:float ) -> void:
 	
 	# Draw boxes / spheres from the arrays
@@ -98,7 +98,7 @@ func _process( _delta:float ) -> void:
 		if( draw_cylinders ):
 			cylinder_array[i].DrawCylinder();
 		
-# Called ever physics tick
+# Called every frame (fixed). 'delta' is the elapsed time since the previous frame.
 func _physics_process( _delta:float ) -> void:
 	# Handle input for camera control
 	HandleCameraControlInput();
